@@ -44,14 +44,24 @@ public class BookMerger {
         }
     }
 
-    public static class BookDataMapper extends Mapper<Object, Text, Text, MapWritable> {
+    public static class BookMapWritable extends MapWritable {
+        @Override public String toString() {
+            String result = "{";
+            for (Map.Entry<Writable, Writable> entry : this.entrySet()) {
+                result += "\"" + entry.getKey() + "\":\"" + entry.getValue() + "\",";
+            }
+            return result + "}";
+        }
+    }
+
+    public static class BookDataMapper extends Mapper<Object, Text, Text, BookMapWritable> {
 
         private String[] headers;
         private Text isbn = new Text();
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String[] values = value.toString().split("\",\"");
-            MapWritable data = new MapWritable();
+            BookMapWritable data = new BookMapWritable();
 
             // TODO: there MUST be a less dumb way of doing this
             if (key.toString().equals("0")) {
@@ -76,29 +86,24 @@ public class BookMerger {
         }
     }
 
-    public static class BookDataReducer extends Reducer<Text, MapWritable, Text, MapWritable> {
-        private MapWritable result = new MapWritable();
+    public static class BookDataReducer extends Reducer<Text, BookMapWritable, Text, BookMapWritable> {
 
-        public void reduce(Text key, Iterable<MapWritable> values, Context context) throws IOException, InterruptedException {
-            System.out.println("KSDHFKJSDHFKJDSHKJFHKJSD\n");
+        public void reduce(Text key, Iterable<BookMapWritable> values, Context context) throws IOException, InterruptedException {
+            BookMapWritable data = new BookMapWritable();
             for (MapWritable dataMap : values) {
-                System.out.println("------\n");
-                System.out.println(dataMap.values());
                 for (Map.Entry<Writable, Writable> entry : dataMap.entrySet()) {
-                    /*Writable existingEntry = result.get(entry.getKey());
+                    Writable existingEntry = data.get(entry.getKey());
                     if (existingEntry != null && !existingEntry.equals(entry.getValue())) {
                         // Mismatched values for the same header
-                        System.out.println("Merge conflict 1");
                         Text newEntry = new Text(existingEntry + "||" + entry.getValue());
-                        result.put(entry.getKey(), newEntry);
+                        data.put(entry.getKey(), newEntry);
                     } else {
-                        result.put(entry.getKey(), entry.getValue());
-                    }*/
-                    result.put(entry.getKey(), entry.getValue());
+                        data.put(entry.getKey(), entry.getValue());
+                    }
                 }
             }
 
-            context.write(key, result);
+            context.write(key, data);
         }
     }
 
@@ -111,7 +116,7 @@ public class BookMerger {
         job.setCombinerClass(BookDataReducer.class);
         job.setReducerClass(BookDataReducer.class);
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(MapWritable.class);
+        job.setOutputValueClass(BookMapWritable.class);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
