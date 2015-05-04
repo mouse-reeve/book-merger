@@ -14,14 +14,20 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 public class BookMerger {
 
-    static final String[] authorSynonyms = {"auth", "author"};
-    static final String[] titleSynonyms = {"title"};
+    static final String[] authorSynonyms = {"author_details"};
+    static final String[] pagesSynonyms = {"number of pages"};
+    static final String[] seriesSynonyms = {"series_details"};
     public enum Header {
         AUTHOR ("author", authorSynonyms),
+        FORMAT("format", null),
+        GENRE("genre", null),
         LIST_PRICE("list_price", null),
-        PAGES ("pages", null),
+        PAGES ("pages", pagesSynonyms),
         PUBLISHER ("publisher", null),
-        TITLE ("title", titleSynonyms);
+        READ_START("date_added", null),
+        READ_FINISH("date_read", null),
+        SERIES ("series", seriesSynonyms),
+        TITLE ("title", null);
 
         private final String name;
         private final String[] synonyms;
@@ -30,14 +36,18 @@ public class BookMerger {
             this.synonyms = synonyms;
         }
 
-        private String[] synonyms() {
-            return synonyms;
-        }
-
         public static Header getHeader(String key) {
+            key = key.toLowerCase();
             for (Header h : Header.values()) {
                 if (key.equals(h.name)) {
                     return h;
+                }
+                if (h.synonyms != null) {
+                    for (int i=0; i<h.synonyms.length; i++) {
+                        if (h.synonyms[i].equals(key)) {
+                            return h;
+                        }
+                    }
                 }
             }
             return null;
@@ -55,12 +65,15 @@ public class BookMerger {
     }
 
     public static class BookDataMapper extends Mapper<Object, Text, Text, BookMapWritable> {
-
         private String[] headers;
         private Text isbn = new Text();
 
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            // TODO: this is a terrible way to handle different CSV formats
             String[] values = value.toString().split("\",\"");
+            if (values.length == 1) {
+                values = value.toString().split(",");
+            }
             BookMapWritable data = new BookMapWritable();
 
             // TODO: there MUST be a less dumb way of doing this
@@ -70,7 +83,7 @@ public class BookMerger {
                 for (int i = 0; i < values.length; i++) {
                     String header = headers[i];
                     String datum = values[i];
-                    if (header.equals("isbn")) {
+                    if (header.equals("isbn") || header.equals("isbn13")) {
                         isbn.set(datum);
                     } else {
                         Header h = Header.getHeader(header);
