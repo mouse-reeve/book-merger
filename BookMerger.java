@@ -1,9 +1,11 @@
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -16,6 +18,9 @@ public class BookMerger {
     static final String[] titleSynonyms = {"title"};
     public enum Header {
         AUTHOR ("author", authorSynonyms),
+        LIST_PRICE("list_price", null),
+        PAGES ("pages", null),
+        PUBLISHER ("publisher", null),
         TITLE ("title", titleSynonyms);
 
         private final String name;
@@ -60,10 +65,8 @@ public class BookMerger {
                     } else {
                         Header h = Header.getHeader(header);
                         if (h != null) {
-                            Text csvKey = new Text();
-                            csvKey.set(h.name);
-                            Text csvValue = new Text();
-                            csvValue.set(datum);
+                            Text csvKey = new Text(h.name);
+                            Text csvValue = new Text(datum);
                             data.put(csvKey, csvValue);
                         }
                     }
@@ -74,12 +77,27 @@ public class BookMerger {
     }
 
     public static class BookDataReducer extends Reducer<Text, MapWritable, Text, MapWritable> {
+        private MapWritable result = new MapWritable();
 
         public void reduce(Text key, Iterable<MapWritable> values, Context context) throws IOException, InterruptedException {
-            MapWritable result = new MapWritable();
-            for (MapWritable val : values) {
-                result = val;
+            System.out.println("KSDHFKJSDHFKJDSHKJFHKJSD\n");
+            for (MapWritable dataMap : values) {
+                System.out.println("------\n");
+                System.out.println(dataMap.values());
+                for (Map.Entry<Writable, Writable> entry : dataMap.entrySet()) {
+                    /*Writable existingEntry = result.get(entry.getKey());
+                    if (existingEntry != null && !existingEntry.equals(entry.getValue())) {
+                        // Mismatched values for the same header
+                        System.out.println("Merge conflict 1");
+                        Text newEntry = new Text(existingEntry + "||" + entry.getValue());
+                        result.put(entry.getKey(), newEntry);
+                    } else {
+                        result.put(entry.getKey(), entry.getValue());
+                    }*/
+                    result.put(entry.getKey(), entry.getValue());
+                }
             }
+
             context.write(key, result);
         }
     }
