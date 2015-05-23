@@ -10,7 +10,8 @@ public enum Header {
     READ_START("date_added", null),
     READ_FINISH("date_read", null),
     SERIES ("series", null),
-    TITLE ("title", null);
+    TITLE ("title", null),
+    ISBN ("isbn", null);
 
     private final String name;
     private final String[] synonyms;

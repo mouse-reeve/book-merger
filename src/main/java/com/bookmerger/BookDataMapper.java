@@ -2,40 +2,32 @@ package com.bookmerger;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BookDataMapper extends Mapper<Object, Text, Text, BookMapWritable> {
-    private String[] headers;
     private Text isbn = new Text();
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-        // TODO: this is a terrible way to handle different CSV formats
-        String[] values = value.toString().split("\",\"");
-        if (values.length == 1) {
-            values = value.toString().split(",");
-        }
-        BookMapWritable data = new BookMapWritable();
+        // Expect lines of valid JSON
+        HashMap<String, Object> result = new ObjectMapper().readValue(value.toString(), HashMap.class);
 
-        // TODO: there MUST be a less dumb way of doing this
-        if (key.toString().equals("0")) {
-            headers = values;
-        } else {
-            for (int i = 0; i < values.length; i++) {
-                String header = headers[i];
-                String datum = values[i];
-                if (header.equals("isbn") || header.equals("isbn13")) {
-                    isbn.set(datum);
-                } else {
-                    Header h = Header.findHeader(header);
-                    if (h != null) {
-                        Text csvKey = new Text(h.getName());
-                        Text csvValue = new Text(datum);
-                        data.put(csvKey, csvValue);
-                    }
-                }
+        BookMapWritable data = new BookMapWritable();
+        for (Map.Entry<String, Object> entry : result.entrySet()) {
+            String fieldName = entry.getKey();
+            Object fieldValue = entry.getValue();
+
+            Header header = Header.findHeader(fieldName);
+
+            if (header != null && header.equals(Header.ISBN)) {
+                isbn = new Text(fieldValue.toString());
+            } else if (header != null) {
+                data.put(new Text(header.getName()), new Text(fieldValue.toString()));
             }
-            context.write(isbn, data);
         }
+        context.write(isbn, data);
     }
 }
