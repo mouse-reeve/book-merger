@@ -11,7 +11,7 @@ public enum Header {
     READ_FINISH("date_read", null),
     SERIES ("series", new String[] {"series_details"}),
     TITLE ("title", null),
-    ISBN ("isbn", null);
+    ISBN ("isbn", new String[] {"originalisbn"});
 
     private final String name;
     private final String[] synonyms;

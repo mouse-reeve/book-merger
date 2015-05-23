@@ -22,9 +22,11 @@ public class BookDataMapper extends Mapper<Object, Text, Text, BookMapWritable> 
 
             Header header = Header.findHeader(fieldName);
 
-            if (header != null && header.equals(Header.ISBN)) {
-                isbn = new Text(fieldValue.toString());
-            } else if (header != null) {
+            if (header != null && fieldValue != null) {
+                if (header.equals(Header.ISBN)) {
+                    isbn = new Text(fieldValue.toString());
+                }
+
                 data.put(new Text(header.getName()), new Text(fieldValue.toString()));
             }
         }
