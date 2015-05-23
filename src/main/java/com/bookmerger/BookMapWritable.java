@@ -6,6 +6,9 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
+/**
+ * Produces a usable output from the the MapWritable toString method
+ */
 public class BookMapWritable extends MapWritable {
     @Override public String toString() {
         String result = "{";

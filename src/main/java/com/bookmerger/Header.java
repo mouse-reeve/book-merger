@@ -1,15 +1,15 @@
 package com.bookmerger;
 
 public enum Header {
-    AUTHOR ("author", null),
+    AUTHOR ("author", new String[] {"author_details"}),
     FORMAT("format", null),
     GENRE("genre", null),
     LIST_PRICE("list_price", null),
-    PAGES ("pages", null),
+    PAGES ("pages", new String[] {"number of pages"}),
     PUBLISHER ("publisher", null),
     READ_START("date_added", null),
     READ_FINISH("date_read", null),
-    SERIES ("series", null),
+    SERIES ("series", new String[] {"series_details"}),
     TITLE ("title", null),
     ISBN ("isbn", null);
 
