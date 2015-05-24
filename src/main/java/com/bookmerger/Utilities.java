@@ -1,5 +1,8 @@
 package com.bookmerger;
 
+import org.apache.hadoop.io.Text;
+import org.codehaus.jackson.JsonNode;
+
 public class Utilities {
     public static String normalizeISBN(String isbn) {
         if (isbn.length() == 10) {
@@ -15,7 +18,6 @@ public class Utilities {
 
     private static String isbn10toISBN13(String isbn10) {
         String isbn13 = "978";
-        int isbn10CheckDigit = Integer.parseInt(isbn10.substring(isbn10.length()-1));
         isbn10 = isbn10.substring(0, 9);
 
         int sum = 0;
@@ -31,5 +33,17 @@ public class Utilities {
 
         isbn13 += isbn10 + isbn13CheckDigit;
         return isbn13;
+    }
+
+    public static BookMapWritable addByFieldName(String[] fields, JsonNode input, BookMapWritable data) {
+        for (String field : fields) {
+            JsonNode fieldValue = input.get(field);
+
+            if (fieldValue != null) {
+                data.put(new Text(field), new Text(fieldValue.toString()));
+            }
+        }
+
+        return data;
     }
 }

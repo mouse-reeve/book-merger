@@ -15,8 +15,6 @@ public class LibraryThingMapper extends Mapper<Object, Text, Text, BookMapWritab
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
         isbn = null;
-
-        // Expect lines of valid JSON
         JsonNode result = new ObjectMapper().readTree(value.toString());
 
         BookMapWritable data = new BookMapWritable();
@@ -57,25 +55,13 @@ public class LibraryThingMapper extends Mapper<Object, Text, Text, BookMapWritab
         }
 
         String[] fields = {"title", "series", "language", "originallanguage", "fromwhere"};
-        for (String field : fields) {
-            Header header;
-            try {
-                header = Header.valueOf(field.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-            JsonNode fieldValue = result.get(field);
-
-            if (fieldValue != null) {
-                data.put(header.asText(), new Text(fieldValue.toString()));
-            }
-        }
+        data = Utilities.addByFieldName(fields, result, data);
 
         JsonNode originalISBN = result.get("originalisbn");
         if (originalISBN != null && isbn == null) {
             String normalizedISBN = Utilities.normalizeISBN(originalISBN.toString());
             isbn = new Text(normalizedISBN);
-            data.put(Header.ISBN.asText(), new Text(originalISBN.toString()));
+            data.put(new Text("isbn"), new Text(originalISBN.toString()));
         }
         if (isbn != null) {
             context.write(isbn, data);
