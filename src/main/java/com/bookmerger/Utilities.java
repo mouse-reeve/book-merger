@@ -7,7 +7,7 @@ public class Utilities {
     public static String normalizeISBN(String isbn) {
         if (isbn.length() == 10) {
             try {
-                Integer.parseInt(isbn);
+                Integer.parseInt(isbn.substring(0, 9));
             } catch (NumberFormatException e) {
                 return isbn;
             }
@@ -17,22 +17,21 @@ public class Utilities {
     }
 
     private static String isbn10toISBN13(String isbn10) {
-        String isbn13 = "978";
-        isbn10 = isbn10.substring(0, 9);
+        //isbn13 = 10 - (x_1 + 3x_2 + x_3 + 3x_4 + ... + x_11 + 3x_12) mod10 ) mod 10
+        String isbn13 = "978" + isbn10.substring(0, 9);
 
         int sum = 0;
-        for (int i = 0; i < isbn10.length(); i++) {
-            int digit = Integer.parseInt(isbn10.substring(i, i+1));
-            if (i % 2 == 0) {
+        for (int i = 0; i < isbn13.length(); i++) {
+            int digit = Integer.parseInt(isbn13.substring(i, i+1));
+            if (i % 2 == 1) {
                 digit *= 3;
             }
             sum += digit;
         }
 
-        int isbn13CheckDigit = sum % 10;
+        int isbn13CheckDigit = (10 - (sum % 10)) % 10;
 
-        isbn13 += isbn10 + isbn13CheckDigit;
-        return isbn13;
+        return isbn13 + isbn13CheckDigit;
     }
 
     public static BookMapWritable addByFieldName(String[] fields, JsonNode input, BookMapWritable data) {
