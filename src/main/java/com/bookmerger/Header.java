@@ -9,22 +9,23 @@ public enum Header {
     LIST_PRICE,
     PAGES,
     PUBLISHER,
-    READ_START,
-    READ_FINISH,
     DATE_ADDED,
+    DATE_PUBLISHED,
     SERIES,
     TITLE,
-    TAGS,
-    RECOMMENDER,
-    TYPE,
-    MOOD,
-    READABILITY,
     LANGUAGE,
     ORIGINAL_LANGUAGE,
     FROM_WHERE,
+    PLACES,
+    EVENTS,
+    CHARACTERS,
     ISBN;
 
     public Text asText() {
         return new Text(this.toString());
+    }
+
+    @Override public String toString() {
+        return super.toString().toLowerCase();
     }
 }

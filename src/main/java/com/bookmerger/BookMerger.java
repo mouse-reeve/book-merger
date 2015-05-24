@@ -19,9 +19,10 @@ public class BookMerger {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(BookMapWritable.class);
 
-        MultipleInputs.addInputPath(job, new Path(args[0]), TextInputFormat.class, CanonicalMapper.class);
-        MultipleInputs.addInputPath(job, new Path(args[1]), TextInputFormat.class, LibraryThingMapper.class);
-        FileOutputFormat.setOutputPath(job, new Path(args[2]));
+        FileOutputFormat.setOutputPath(job, new Path(args[0]));
+        MultipleInputs.addInputPath(job, new Path(args[1]), TextInputFormat.class, CanonicalMapper.class);
+        MultipleInputs.addInputPath(job, new Path(args[2]), TextInputFormat.class, LibraryThingMapper.class);
+        MultipleInputs.addInputPath(job, new Path(args[3]), TextInputFormat.class, LTScrapedMapper.class);
 
         job.waitForCompletion(true);
     }
