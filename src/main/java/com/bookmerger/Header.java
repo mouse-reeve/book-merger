@@ -3,7 +3,7 @@ package com.bookmerger;
 import org.apache.hadoop.io.Text;
 
 public enum Header {
-    AUTHORS,
+    AUTHOR_DETAILS,
     FORMAT,
     GENRE,
     LIST_PRICE,
@@ -14,8 +14,8 @@ public enum Header {
     SERIES,
     TITLE,
     LANGUAGE,
-    ORIGINAL_LANGUAGE,
-    FROM_WHERE,
+    ORIGINALLANGUAGE,
+    FROMWHERE,
     PLACES,
     EVENTS,
     CHARACTERS,
