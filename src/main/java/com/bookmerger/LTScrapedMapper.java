@@ -17,7 +17,7 @@ public class LTScrapedMapper extends Mapper<Object, Text, Text, BookMapWritable>
         JsonNode isbn10 = result.get("isbn");
         isbn = new Text(Utilities.normalizeISBN(isbn10.asText()));
 
-        String[] fields = {"places", "characters", "events", "year"};
+        String[] fields = {"places", "characters", "events", "date_first_published"};
         data = Utilities.addByFieldName(fields, result, data);
 
         if (isbn != null) {

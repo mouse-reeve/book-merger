@@ -44,17 +44,17 @@ public class LibraryThingMapper extends Mapper<Object, Text, Text, BookMapWritab
                     tag = tagParts[1];
                 }
                 if (tagCategories.get(type) == null) {
-                    tagCategories.put(type, tag);
+                    tagCategories.put(type, "\"" + tag + "\"");
                 } else {
-                    tagCategories.put(type, tagCategories.get(type) + "," + tag);
+                    tagCategories.put(type, tagCategories.get(type) + "," + "\"" + tag + "\"");
                 }
             }
         }
         for (Map.Entry<String, String> entry : tagCategories.entrySet()) {
-            data.put(new Text(entry.getKey()), new Text(entry.getValue()));
+            data.put(new Text(entry.getKey()), new Text("[" + entry.getValue() + "]"));
         }
 
-        String[] fields = {"title", "series", "language", "originallanguage", "fromwhere"};
+        String[] fields = {"series", "language", "originallanguage", "fromwhere"};
         data = Utilities.addByFieldName(fields, result, data);
 
         JsonNode originalISBN = result.get("originalisbn");

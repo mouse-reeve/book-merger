@@ -16,8 +16,9 @@ public class CanonicalMapper extends Mapper<Object, Text, Text, BookMapWritable>
 
         JsonNode rawISBN = result.get("isbn");
         if (rawISBN != null) {
-            isbn = new Text(Utilities.normalizeISBN(rawISBN.asText()));
-            data.put(new Text("isbn"), new Text(rawISBN.toString()));
+            String cleanISBN = rawISBN.asText().replace("\"", "");
+            isbn = new Text(Utilities.normalizeISBN(cleanISBN));
+            data.put(new Text("isbn"), new Text(cleanISBN));
         }
 
         String[] fields = {"title", "author_details", "publisher", "pages", "list_price", "format", "genre", "date_added"};

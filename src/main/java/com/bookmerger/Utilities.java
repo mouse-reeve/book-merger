@@ -39,7 +39,11 @@ public class Utilities {
             JsonNode fieldValue = input.get(field);
 
             if (fieldValue != null) {
-                data.put(new Text(field), new Text(fieldValue.toString()));
+                String result = fieldValue.toString();
+                if (result.charAt(0) != '[') {
+                    result = result.replace("\"", "'");
+                }
+                data.put(new Text(field), new Text(result));
             }
         }
 
