@@ -1,5 +1,6 @@
 package com.bookmerger;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.codehaus.jackson.JsonNode;
@@ -21,7 +22,16 @@ public class CanonicalMapper extends Mapper<Object, Text, Text, BookMapWritable>
             data.put(new Text("isbn"), new Text(cleanISBN));
         }
 
-        String[] fields = {"title", "author_details", "publisher", "pages", "list_price", "format", "genre", "date_added"};
+        JsonNode authorJson = result.get("author_details");
+        if (authorJson != null) {
+            String authorBlob = authorJson.asText();
+            authorBlob  = authorBlob.replace("\"", "'");
+            String[] authors = authorBlob.split("\\|");
+            String authorString = "[\"" + StringUtils.join(authors, "\",\"") + "\"]";
+            data.put(new Text("authors"), new Text(authorString));
+        }
+
+        String[] fields = {"title", "publisher", "pages", "list_price", "format", "genre", "date_added"};
         data = Utilities.addByFieldName(fields, result, data);
 
         if (isbn.getLength() > 0) {
