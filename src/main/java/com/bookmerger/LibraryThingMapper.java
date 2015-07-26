@@ -54,7 +54,7 @@ public class LibraryThingMapper extends Mapper<Object, Text, Text, BookMapWritab
             data.put(new Text(entry.getKey()), new Text("[" + entry.getValue() + "]"));
         }
 
-        String[] fields = {"series", "language", "originallanguage", "fromwhere"};
+        String[] fields = {"series", "language", "originallanguage", "fromwhere", "height", "thickness", "length"};
         data = Utilities.addByFieldName(fields, result, data);
 
         JsonNode originalISBN = result.get("originalisbn");
