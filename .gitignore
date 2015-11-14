@@ -1,0 +1,6 @@
+*.swp
+.DS_Store
+target/
+.idea/
+output/
+testinput/
