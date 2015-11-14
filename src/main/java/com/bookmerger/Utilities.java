@@ -5,6 +5,8 @@ import org.codehaus.jackson.JsonNode;
 
 public class Utilities {
     public static String normalizeISBN(String isbn) {
+        isbn = isbn.replace("\"", "");
+        int len = isbn.length();
         if (isbn.length() == 10) {
             try {
                 Integer.parseInt(isbn.substring(0, 9));

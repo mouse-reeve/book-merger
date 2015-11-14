@@ -9,17 +9,20 @@ import org.codehaus.jackson.map.ObjectMapper;
 import java.io.IOException;
 
 public class CanonicalMapper extends Mapper<Object, Text, Text, BookMapWritable> {
-    private Text isbn = new Text();
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
         JsonNode result = new ObjectMapper().readTree(value.toString());
         BookMapWritable data = new BookMapWritable();
 
         JsonNode rawISBN = result.get("isbn");
+        Text isbn;
         if (rawISBN != null) {
             String cleanISBN = rawISBN.asText().replace("\"", "");
             isbn = new Text(Utilities.normalizeISBN(cleanISBN));
-            data.put(new Text("isbn"), new Text(cleanISBN));
+            data.put(new Text("isbn"), isbn);
+        } else {
+            // can't map without an isbn
+            return;
         }
 
         JsonNode authorJson = result.get("author_details");

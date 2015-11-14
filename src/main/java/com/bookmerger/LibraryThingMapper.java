@@ -11,23 +11,20 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class LibraryThingMapper extends Mapper<Object, Text, Text, BookMapWritable> {
-    private Text isbn = new Text();
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-        isbn = null;
+        Text isbn;
         JsonNode result = new ObjectMapper().readTree(value.toString());
 
         BookMapWritable data = new BookMapWritable();
 
-        JsonNode isbns = result.get("isbns");
-        if (isbns != null) {
-            Iterator<JsonNode> items = isbns.getElements();
-            while (items.hasNext()) {
-                String item = items.next().asText();
-                if (item.length() == 13) {
-                    isbn = new Text(item);
-                }
-            }
+        JsonNode originalISBN = result.get("originalisbn");
+        if (originalISBN != null) {
+            String normalizedISBN = Utilities.normalizeISBN(originalISBN.toString());
+            isbn = new Text(normalizedISBN);
+            data.put(new Text("isbn"), isbn);
+        } else {
+            return;
         }
 
         JsonNode tags = result.get("tags");
@@ -57,14 +54,6 @@ public class LibraryThingMapper extends Mapper<Object, Text, Text, BookMapWritab
         String[] fields = {"series", "language", "originallanguage", "fromwhere", "height", "thickness", "length"};
         data = Utilities.addByFieldName(fields, result, data);
 
-        JsonNode originalISBN = result.get("originalisbn");
-        if (originalISBN != null && isbn == null) {
-            String normalizedISBN = Utilities.normalizeISBN(originalISBN.toString());
-            isbn = new Text(normalizedISBN);
-            data.put(new Text("isbn"), new Text(originalISBN.toString()));
-        }
-        if (isbn != null) {
-            context.write(isbn, data);
-        }
+        context.write(isbn, data);
     }
 }
